@@ -4209,60 +4209,6 @@ init -995 python in mas_utils:
     # timezone cache
     _tz_cache = None
 
-    def compareVersionLists(curr_vers, comparative_vers):
-        """
-        Generic version number checker
-
-        IN:
-            curr_vers - current version number as a list (eg. 1.2.5 -> [1, 2, 5])
-            comparative_vers - the version we're comparing to as a list, same format as above
-
-            NOTE: The version numbers can be different lengths
-
-        OUT:
-            integer:
-                - (-1) if the current version number is less than the comparitive version
-                - 0 if the current version is the same as the comparitive version
-                - 1 if the current version is greater than the comparitive version
-        """
-        #Define a local function to use to fix up the version lists if need be
-        def fixVersionListLen(smaller_vers_list, larger_vers_list):
-            """
-            Adjusts the smaller version list to be the same length as the larger version list for easy comparison
-
-            IN:
-                smaller_vers_list - the smol list to adjust
-                larger_vers_list - the list we will adjust the smol list to
-
-            OUT:
-                adjusted version list
-
-            NOTE: fills missing indeces with 0's
-            """
-            for missing_ind in range(len(larger_vers_list) - len(smaller_vers_list)):
-                smaller_vers_list.append(0)
-            return smaller_vers_list
-
-        #Let's verify that the lists are the same length
-        if len(curr_vers) < len(comparative_vers):
-            curr_vers = fixVersionListLen(curr_vers, comparative_vers)
-
-        elif len(curr_vers) > len(comparative_vers):
-            comparative_vers = fixVersionListLen(comparative_vers, curr_vers)
-
-        #Check if the lists are the same. If so, we're the same version and can return 0
-        if comparative_vers == curr_vers:
-            return 0
-
-        #Now we iterate and check the version numbers sequentially from left to right
-        for index in range(len(curr_vers)):
-            if curr_vers[index] > comparative_vers[index]:
-                #The current version is greater here, let's return 1 as the rest of the version is irrelevant
-                return 1
-
-            elif curr_vers[index] < comparative_vers[index]:
-                #Comparative version is greater, the rest of this is irrelevant
-                return -1
 
     def all_none(data=None, lata=None):
         """
@@ -6490,6 +6436,7 @@ init 2 python:
             return "An" if should_capitalize else "an"
         return "A" if should_capitalize else "a"
 
+    #TODO: Add minutes param for verbosity + new function for clearing pause
     def mas_setEventPause(seconds=60):
         """
         Sets a pause 'til next event
@@ -6503,6 +6450,33 @@ init 2 python:
 
         else:
             mas_globals.event_unpause_dt = datetime.datetime.utcnow() + datetime.timedelta(seconds=seconds)
+
+    def mas_getCurrentMoniExp(layer="master"):
+        """
+        Returns Monika's current expression
+
+        IN:
+            layer - the layer to check for Monika's displayable
+                You probably shouldn't change this
+                (Default: 'master')
+
+        OUT:
+            string with sprite code
+            or None if we couldn't get the exp (e.g. if Monika isn't on the screen)
+        """
+        # It can be really problematic to get this, easier to just use try/except
+        try:
+            current_exp = renpy.game.context().images.get_attributes(layer, "monika")[0]
+
+        except:
+            current_exp = None
+
+        else:
+            # If we're showing idle, we should fetch the spr code from it directly
+            if current_exp == "idle":
+                current_exp = mas_moni_idle_disp.current_exp.code
+
+        return current_exp
 
 init 21 python:
     def mas_get_player_nickname(capitalize=False, exclude_names=[], _default=None, regex_replace_with_nullstr=None):
@@ -6745,6 +6719,10 @@ define audio.fall = "sfx/fall.ogg"
 # custom audio
 # big thanks to sebastianN01 for the rain sounds
 define audio.rain = "mod_assets/sounds/amb/rain_2.ogg"
+
+# light switch sound created by SPANAC from
+# https://www.freesoundslibrary.com/light-switch-sound-effect/
+define audio.light_switch = "mod_assets/sounds/effects/light-switch-sound-effect.mp3"
 
 # Backgrounds
 image black = "#000000"
@@ -8094,7 +8072,7 @@ init -1 python in mas_randchat:
         """
         Reduces the randchat setting if we're too high for the current affection level
         """
-        max_setting_for_level = store.mas_affection.RANDCHAT_RANGE_MAP[aff_level]
+        max_setting_for_level = store.mas_affection.RANDCHAT_RANGE_MAP.get(aff_level, RARELY)
 
         if store.persistent._mas_randchat_freq > max_setting_for_level:
             adjustRandFreq(max_setting_for_level)
@@ -8133,12 +8111,7 @@ init -1 python in mas_randchat:
             displayable string that reprsents the current random chatter
             setting
         """
-        randchat_disp = SLIDER_MAP_DISP.get(slider_value, None)
-
-        if slider_value is None:
-            return "Never"
-
-        return randchat_disp
+        return SLIDER_MAP_DISP.get(slider_value, "UNKNOWN")
 
 
     def setWaitingTime():
