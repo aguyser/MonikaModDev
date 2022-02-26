@@ -7898,19 +7898,19 @@ default persistent._mas_game_crashed = False
 default persistent.seen_monika_in_room = False
 # NOTE: For convenience this will automatically add new keys as we add new games, the default value is False
 default persistent._mas_ever_won = collections.defaultdict(bool)
-# TODO: Delete this as depricated
-# default persistent.ever_won = {'pong':False,'chess':False,'hangman':False,'piano':False}
 default persistent.sessions={'last_session_end':None,'current_session_start':None,'total_playtime':datetime.timedelta(seconds=0),'total_sessions':0,'first_session':datetime.datetime.now()}
 default persistent.random_seen = 0
 default persistent._mas_affection = {
     "affection":0,#done
     "goodexp":1,
     "badexp":1,
-    "apologyflag":False,
+    "apologyflag":False,# done
     "freeze_date": None,# done
     "today_exp":0# done
 }
+default persistent._mas_affection_version = 2
 default persistent._mas_affection_data =  mas_affection.get_default_data()
+default persistent._mas_affection_should_apologise = False
 default persistent._mas_affection_backups = collections.deque(maxlen=30)
 default persistent._mas_enable_random_repeats = True
 #default persistent._mas_monika_repeated_herself = False
