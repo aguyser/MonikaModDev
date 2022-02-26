@@ -377,7 +377,15 @@ label v0_3_1(version=version): # 0.3.1
 # 0.12.8.3
 label v0_12_8_3(version="v0_12_8_3"):
     python hide:
-        pass
+        # If you see this label, you need to be transferred
+        persistent._mas_affection_version = 1
+        mas_affection._transfer_aff_2nd_gen()
+        mas_affection.remove_backups()
+        mas_affection.backup_aff()
+
+        old_data = persistent._mas_affection
+        if old_data and "apologyflag" in old_data:
+            persistent._mas_affection_should_apologise = old_data["apologyflag"]
     return
 
 
