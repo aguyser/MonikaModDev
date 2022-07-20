@@ -6522,7 +6522,7 @@ init 2 python:
         return current_exp
 
 init 21 python:
-    def mas_get_player_nickname(capitalize=False, exclude_names=[], _default=None, regex_replace_with_nullstr=None):
+    def mas_get_player_nickname(capitalize=True, exclude_names=[], _default=None, regex_replace_with_nullstr=None):
         """
         Picks a nickname for the player at random based on accepted nicknames
 
